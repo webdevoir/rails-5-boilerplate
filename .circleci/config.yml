@@ -7,12 +7,18 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-       - image: circleci/ruby:2.4.1-node-browsers
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+       - image: circleci/ruby:2.4.1-node-browser
+         environment:
+            - VOF_PATH: /home/circleci/vof
+            - PG_HOST: localhost
+            - PGUSER: circleci
+            - RAILS_ENV: test
+            - DATABASE_URL: postgresql://circleci@localhost/circlecidb
+        - image: postgres:9.6
+          environment:
+            - POSTGRES_USER: circleci
+            - POSTGRES_DB: circlecidb
+            - POSTGRES_PASSWORD: ''
 
     working_directory: ~/repo
 
