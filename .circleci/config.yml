@@ -9,6 +9,7 @@ jobs:
           PGHOST: localhost
           PGUSER: rails-5-boilerplate
           RAILS_ENV: test
+          DATABASE_URL: postgresql://rails-5-boilerplatelocalhost/rails-5-boilerplate
       - image: postgres:9.5
         environment:
           POSTGRES_USER: rails-5-boilerplate
@@ -36,10 +37,17 @@ jobs:
       - run: dockerize -wait tcp://localhost:5432 -timeout 1m
 
       # Setup the environment
-      - run: cp .sample.env .env
+      # - run: figaro install
 
       # Setup the database
-      - run: bundle exec rake db:setup
+      - run:
+          name: Set up DB
+          command: |
+            bundle exec rake db:create db:schema:load --trace
+            bundle exec rake db:migrate
+          environment:
+            DATABASE_URL: "postgres://rails-5-boilerplate@localhost:5432/rails-5-boilerplate"
+
 
       # Run the tests
       - run: bundle exec rspec
