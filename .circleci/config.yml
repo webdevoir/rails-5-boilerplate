@@ -1,22 +1,17 @@
-# Ruby CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-ruby/ for more details
-#
-
 version: 2.0
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/ruby:2.4.2-jessie-node-browsers
+    - image: circleci/ruby:2.5.0-jessie-node-browsers
       environment:
-        - PG_HOST: localhost
-            - PGUSER: circleci
-            - RAILS_ENV: test
-        - image: postgres:9.6
-          environment:
-            - POSTGRES_USER: circleci
-            - POSTGRES_DB: circlecidb
-            - POSTGRES_PASSWORD: ''
+        PGHOST: localhost
+        PGUSER: circleci
+        RAILS_ENV: test
+    - image: circleci/postgres:9.6
+      environment:
+        POSTGRES_USER: circleci
+        POSTGRES_DB: circledb
+        POSTGRES_PASSWORD: ""
 jobs:
   build:
     <<: *defaults
@@ -45,35 +40,12 @@ jobs:
       - run: 
           name: Run backend tests
           command: |
-            mkdir /tmp/test-results
-            TEST_FILES="$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)"
-            
-            bundle exec rspec --format progress \
-                            --format RspecJunitFormatter \
-                            --out /tmp/test-results/rspec.xml \
-                            --format progress \
-                            $TEST_FILES
+            bundle exec rspec spec
             ./tmp/cc-test-reporter format-coverage -t simplecov -o tmp/codeclimate.backend.json coverage/backend/.resultset.json
       - persist_to_workspace:
           root: tmp
           paths: 
             - codeclimate.backend.json
-  frontend-tests:
-    <<: *defaults
-    steps:
-      - checkout 
-      - attach_workspace:
-          at: ~/repo/tmp
-      - run: npm install
-      - run: 
-          name: Run frontend testss
-          command: |
-            npm test
-            ./tmp/cc-test-reporter format-coverage -t lcov -o tmp/codeclimate.frontend.json coverage/frontend/lcov.info
-      - persist_to_workspace:
-          root: tmp
-          paths: 
-            - codeclimate.frontend.json
   upload-coverage:
     <<: *defaults
     environment: 
@@ -95,9 +67,6 @@ workflows:
       - backend-tests:
           requires:
             - build
-      - frontend-tests: 
-          requires: 
-             - build
       - upload-coverage:
           requires:
              - backend-tests
