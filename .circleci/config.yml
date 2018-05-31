@@ -2,7 +2,7 @@ version: 2.0
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/ruby:2.5.0-jessie-node-browsers
+    - image: circleci/ruby:2.4.2-jessie-node-browsers
       environment:
         PGHOST: localhost
         PGUSER: circleci
